@@ -3,35 +3,35 @@ const fetch = require('node-fetch');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// === WHITELIST: Mapping av godkjente brikker ===
+// ✅ Kun disse brikkene er gyldige og skal logges/redirectes
 const reviewLinks = {
   kunde1: 'https://g.page/r/xxxxxxxx',
   kunde2: 'https://g.page/r/yyyyyyyy',
   kunde3: 'https://g.page/r/zzzzzzzz'
 };
 
-// === Google Sheets webhook-URL ===
+// Google Sheets webhook
 const webhookUrl = 'https://script.google.com/macros/s/AKfycbxUTIx2Pyhj2C4HSTucFfgP3cAyVJ8heihpwyqAMYUx3PObs7p0SLyqctiQC26sk5Rx/exec';
 
 app.get('/', async (req, res) => {
   const host = req.headers.host || '';
   const subdomain = host.split('.')[0];
 
-  // 🚫 Hopp over hvis brikken ikke finnes i whitelist
+  // ❌ STOPP hvis subdomenet ikke finnes i whitelist
   if (!reviewLinks.hasOwnProperty(subdomain)) {
     return res.status(204).end();
   }
 
-  // ✅ Logg og redirect for godkjent brikke
+  // 🕒 Norsk tid (UTC+2)
   const timestampUTC = new Date();
   const timestampLocal = new Date(timestampUTC.getTime() + 2 * 60 * 60 * 1000);
   const formattedTime = timestampLocal.toISOString().replace('T', ' ').substring(0, 19);
 
   const ipRaw = req.headers['x-forwarded-for'] || req.connection.remoteAddress || '';
   const ip = ipRaw.split(',')[0].trim();
-
   const userAgent = req.headers['user-agent'] || '';
 
+  // 🚀 Send logg til Google Sheets
   const logData = {
     brikke: subdomain,
     tidspunkt: formattedTime,
@@ -50,8 +50,8 @@ app.get('/', async (req, res) => {
     console.error('❌ Feil ved logging til Sheets:', err);
   }
 
-  const target = reviewLinks[subdomain];
-  res.redirect(302, target);
+  // ➡️ Redirect til riktig Review-link
+  res.redirect(302, reviewLinks[subdomain]);
 });
 
 app.listen(PORT, () => {
