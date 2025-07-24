@@ -1,23 +1,28 @@
 const express = require('express');
-const fetch = require('node-fetch'); // Husk: node-fetch@2 installert via package.json
+const fetch = require('node-fetch');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// === Mapping av subdomener til Google Review-lenker ===
+// === WHITELIST: Mapping av godkjente brikker ===
 const reviewLinks = {
-  kunde1: 'https://g.page/r/xxxxxxxx',     // ← bytt ut disse med faktiske lenker
-  kunde2: 'https://g.page/r/yyyyyyyy'
+  kunde1: 'https://g.page/r/xxxxxxxx',
+  kunde2: 'https://g.page/r/yyyyyyyy',
+  kunde3: 'https://g.page/r/zzzzzzzz'
 };
 
 // === Google Sheets webhook-URL ===
 const webhookUrl = 'https://script.google.com/macros/s/AKfycbxUTIx2Pyhj2C4HSTucFfgP3cAyVJ8heihpwyqAMYUx3PObs7p0SLyqctiQC26sk5Rx/exec';
 
-// === Kun logg hoved-GET-forespørsel (unngå favicon, HEAD osv) ===
 app.get('/', async (req, res) => {
   const host = req.headers.host || '';
   const subdomain = host.split('.')[0];
 
-  // Juster til norsk tid (CEST = UTC+2)
+  // 🚫 Hopp over hvis brikken ikke finnes i whitelist
+  if (!reviewLinks.hasOwnProperty(subdomain)) {
+    return res.status(204).end();
+  }
+
+  // ✅ Logg og redirect for godkjent brikke
   const timestampUTC = new Date();
   const timestampLocal = new Date(timestampUTC.getTime() + 2 * 60 * 60 * 1000);
   const formattedTime = timestampLocal.toISOString().replace('T', ' ').substring(0, 19);
@@ -34,7 +39,6 @@ app.get('/', async (req, res) => {
     enhet: userAgent
   };
 
-  // Send logg til Google Sheets
   try {
     await fetch(webhookUrl, {
       method: 'POST',
@@ -46,12 +50,10 @@ app.get('/', async (req, res) => {
     console.error('❌ Feil ved logging til Sheets:', err);
   }
 
-  // Redirect til riktig kunde eller fallback
-  const target = reviewLinks[subdomain] || 'https://kunda.no';
+  const target = reviewLinks[subdomain];
   res.redirect(302, target);
 });
 
-// === Start server ===
 app.listen(PORT, () => {
   console.log(`🚀 NFC redirect app kjører på port ${PORT}`);
 });
