@@ -5,9 +5,9 @@ const PORT = process.env.PORT || 3000;
 
 // ✅ Kun disse brikkene er gyldige og skal logges/redirectes
 const reviewLinks = {
-  0100: 'https://www.kunda.no/',
-  0101: 'https://www.kunda.no/',
-  0102: 'https://www.kunda.no/'
+  0100: 'https://www.vg.no/',
+  0101: 'https://www.smp.no/',
+  0102: 'https://www.db.no/'
 };
 
 // Google Sheets webhook
