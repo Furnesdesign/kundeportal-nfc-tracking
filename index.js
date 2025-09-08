@@ -1,63 +1,55 @@
 const express = require('express');
 const fetch = require('node-fetch');
-const app = express();
-const PORT = process.env.PORT || 3000;
+const { AbortController } = require('abort-controller');
+const http = require('http');
 
+const app = express();
 app.set('trust proxy', true);
 
-// ✅ Brikkene som er gyldige
+// hold forbindelser varme mot Apps Script (litt raskere)
+const keepAliveAgent = new http.Agent({ keepAlive: true });
+
 const reviewLinks = {
   '100': 'https://www.vg.no/',
   '101': 'https://www.smp.no/',
   '102': 'https://www.db.no/'
 };
 
-// Google Sheets webhook
 const webhookUrl = 'https://script.google.com/macros/s/AKfycbxUTIx2Pyhj2C4HSTucFfgP3cAyVJ8heihpwyqAMYUx3PObs7p0SLyqctiQC26sk5Rx/exec';
 
-app.get('/', async (req, res) => {
+app.get('/', (req, res) => {
   const host = req.headers.host || '';
   const subdomain = (host.split('.')[0] || '').toString();
+  const target = reviewLinks[subdomain];
 
-  console.log('Host:', host, 'Subdomain:', subdomain);
+  if (!target) return res.status(204).end();
 
-  // ❌ STOPP hvis subdomenet ikke finnes i whitelist
-  if (!reviewLinks.hasOwnProperty(subdomain)) {
-    console.log('Subdomain not whitelisted:', subdomain);
-    return res.status(204).end();
-  }
+  // --- 1) Send redirect med én gang (ikke vent på logging) ---
+  res.redirect(302, target);
 
-  // 🕒 Norsk tid
+  // --- 2) Logg i bakgrunnen (fire-and-forget) ---
   const now = new Date();
-  const formattedTime = new Intl.DateTimeFormat('sv-SE', {
-    timeZone: 'Europe/Oslo',
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', second: '2-digit',
-    hour12: false
-  }).format(now).replace('T', ' ').replace(/\./g, '-');
+  const tidspunkt = new Intl.DateTimeFormat('sv-SE', {
+    timeZone: 'Europe/Oslo', year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+  }).format(now).replace(' ', ' ').replace(/\./g, '-');
 
-  const ipRaw = req.headers['x-forwarded-for'] || req.connection.remoteAddress || '';
-  const ip = ipRaw.split(',')[0].trim();
-  const userAgent = req.headers['user-agent'] || '';
+  const ip = (req.headers['x-forwarded-for'] || req.connection.remoteAddress || '').split(',')[0].trim();
+  const enhet = req.headers['user-agent'] || '';
 
-  // 🚀 Send logg til Google Sheets
-  const logData = { brikke: subdomain, tidspunkt: formattedTime, ip, enhet: userAgent };
+  const logData = { brikke: subdomain, tidspunkt, ip, enhet };
 
-  try {
-    await fetch(webhookUrl, {
-      method: 'POST',
-      body: JSON.stringify(logData),
-      headers: { 'Content-Type': 'application/json' }
-    });
-    console.log(`✅ Logget til Google Sheets for brikke: ${subdomain}`);
-  } catch (err) {
-    console.error('❌ Feil ved logging til Sheets:', err);
-  }
+  // Sett en kort timeout slik at logging aldri henger
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 1000); // 1s
 
-  // ➡️ Redirect
-  res.redirect(302, reviewLinks[subdomain]);
-});
-
-app.listen(PORT, () => {
-  console.log(`🚀 NFC redirect app kjører på port ${PORT}`);
+  fetch(webhookUrl, {
+    method: 'POST',
+    body: JSON.stringify(logData),
+    headers: { 'Content-Type': 'application/json' },
+    agent: keepAliveAgent,
+    signal: controller.signal
+  }).catch(err => {
+    console.error('Sheets log failed:', err?.name || err);
+  }).finally(() => clearTimeout(timeout));
 });
