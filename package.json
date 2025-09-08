@@ -1,6 +1,7 @@
 {
   "name": "nfc-redirect",
   "version": "1.0.0",
+  "description": "NFC redirect app with background logging to Google Sheets",
   "main": "index.js",
   "scripts": { "start": "node index.js" },
   "engines": { "node": ">=18" }
