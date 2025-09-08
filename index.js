@@ -17,7 +17,7 @@ const reviewLinks = {
 };
 
 // Google Sheets webhook (Apps Script web app URL)
-const webhookUrl = 'https://script.google.com/macros/s/AKfycby1hBq41rLqK1SkBWylGesnY_klNanYaIfHNPNyBf10jLZFwKfIu3--gHV1BLkozoBd/exec';
+const webhookUrl = 'https://script.google.com/macros/s/AKfycbycQkNKjSSz0g1B9q6kvq7RzHmOO2xg2MU3lHUKs3QreSoqW02c3XNGVamrrG8XnNH2Qw/exec';
 
 app.get('/', (req, res) => {
   const host = req.headers.host || '';
