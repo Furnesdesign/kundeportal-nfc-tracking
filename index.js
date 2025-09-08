@@ -3,11 +3,13 @@ const fetch = require('node-fetch');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ✅ Kun disse brikkene er gyldige og skal logges/redirectes
+app.set('trust proxy', true);
+
+// ✅ Brikkene som er gyldige
 const reviewLinks = {
-  0100: 'https://www.kunda.no/',
-  0101: 'https://www.smp.no/',
-  0102: 'https://www.db.no/'
+  '0100': 'https://www.vg.no/',
+  '0101': 'https://www.smp.no/',
+  '0102': 'https://www.db.no/'
 };
 
 // Google Sheets webhook
@@ -15,29 +17,31 @@ const webhookUrl = 'https://script.google.com/macros/s/AKfycbxUTIx2Pyhj2C4HSTucF
 
 app.get('/', async (req, res) => {
   const host = req.headers.host || '';
-  const subdomain = host.split('.')[0];
+  const subdomain = (host.split('.')[0] || '').toString();
+
+  console.log('Host:', host, 'Subdomain:', subdomain);
 
   // ❌ STOPP hvis subdomenet ikke finnes i whitelist
   if (!reviewLinks.hasOwnProperty(subdomain)) {
+    console.log('Subdomain not whitelisted:', subdomain);
     return res.status(204).end();
   }
 
-  // 🕒 Norsk tid (UTC+2)
-  const timestampUTC = new Date();
-  const timestampLocal = new Date(timestampUTC.getTime() + 2 * 60 * 60 * 1000);
-  const formattedTime = timestampLocal.toISOString().replace('T', ' ').substring(0, 19);
+  // 🕒 Norsk tid
+  const now = new Date();
+  const formattedTime = new Intl.DateTimeFormat('sv-SE', {
+    timeZone: 'Europe/Oslo',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    hour12: false
+  }).format(now).replace('T', ' ').replace(/\./g, '-');
 
   const ipRaw = req.headers['x-forwarded-for'] || req.connection.remoteAddress || '';
   const ip = ipRaw.split(',')[0].trim();
   const userAgent = req.headers['user-agent'] || '';
 
   // 🚀 Send logg til Google Sheets
-  const logData = {
-    brikke: subdomain,
-    tidspunkt: formattedTime,
-    ip: ip,
-    enhet: userAgent
-  };
+  const logData = { brikke: subdomain, tidspunkt: formattedTime, ip, enhet: userAgent };
 
   try {
     await fetch(webhookUrl, {
@@ -50,7 +54,7 @@ app.get('/', async (req, res) => {
     console.error('❌ Feil ved logging til Sheets:', err);
   }
 
-  // ➡️ Redirect til riktig Review-link
+  // ➡️ Redirect
   res.redirect(302, reviewLinks[subdomain]);
 });
 
