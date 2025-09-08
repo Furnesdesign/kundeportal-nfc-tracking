@@ -11,9 +11,9 @@ const keepAliveAgent = new https.Agent({ keepAlive: true });
 
 // ✅ Whitelisted tags → redirect URLs
 const reviewLinks = {
-  '0100': 'https://www.vg.no/',
-  '0101': 'https://www.smp.no/',
-  '0102': 'https://www.db.no/'
+  '100': 'https://www.vg.no/',
+  '101': 'https://www.smp.no/',
+  '102': 'https://www.db.no/'
 };
 
 // Google Sheets webhook (Apps Script web app URL)
