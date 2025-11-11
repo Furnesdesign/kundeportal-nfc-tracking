@@ -13,7 +13,6 @@ const keepAliveAgent = new https.Agent({ keepAlive: true });
 const reviewLinks = {
   '100': 'https://www.vg.no/',
   '101': 'https://www.smp.no/',
-  '101': 'https://www.smp.no/',
   '149': 'https://www.kunda.no/klinikker'
 };
 
