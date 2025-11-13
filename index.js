@@ -24,6 +24,7 @@ const reviewLinks = {
   '111': 'https://www.kunda.no/klinikker',
   '112': 'https://www.kunda.no/klinikker',
   '113': 'https://www.kunda.no/klinikker',
+  '114': 'https://www.kunda.no/klinikker',
   '149': 'https://www.kunda.no/klinikker'
 };
 
