@@ -11,8 +11,19 @@ const keepAliveAgent = new https.Agent({ keepAlive: true });
 
 // ✅ Whitelisted tags → redirect URLs
 const reviewLinks = {
-  '100': 'https://www.vg.no/',
-  '101': 'https://www.smp.no/',
+  '101': 'https://www.kunda.no/klinikker',
+  '102': 'https://www.kunda.no/klinikker',
+  '103': 'https://www.kunda.no/klinikker',
+  '104': 'https://www.kunda.no/klinikker',
+  '105': 'https://www.kunda.no/klinikker',
+  '106': 'https://www.kunda.no/klinikker',
+  '107': 'https://www.kunda.no/klinikker',
+  '108': 'https://www.kunda.no/klinikker',
+  '109': 'https://www.kunda.no/klinikker',
+  '110': 'https://www.kunda.no/klinikker',
+  '111': 'https://www.kunda.no/klinikker',
+  '112': 'https://www.kunda.no/klinikker',
+  '113': 'https://www.kunda.no/klinikker',
   '149': 'https://www.kunda.no/klinikker'
 };
 
