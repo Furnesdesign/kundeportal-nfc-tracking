@@ -25,7 +25,8 @@ const reviewLinks = {
   '112': 'https://www.kunda.no/klinikker',
   '113': 'https://www.kunda.no/klinikker',
   '114': 'https://www.kunda.no/klinikker',
-  '149': 'https://www.kunda.no/klinikker'
+  '143': 'https://www.fremmi.no/anmeldelse',
+  '901': 'https://www.fremmi.no/anmeldelse'
 };
 
 // Google Sheets webhook (NEW)
