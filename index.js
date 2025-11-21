@@ -26,6 +26,7 @@ const reviewLinks = {
   '113': 'https://www.kunda.no/klinikker',
   '114': 'https://www.kunda.no/klinikker',
   '143': 'https://www.fremmi.no/anmeldelse',
+  '149': 'https://www.kunda.no/klinikker',
   '901': 'https://www.fremmi.no/anmeldelse'
 };
 
