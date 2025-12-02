@@ -11,6 +11,7 @@ const keepAliveAgent = new https.Agent({ keepAlive: true });
 
 // ✅ Whitelisted tags → redirect URLs
 const reviewLinks = {
+  '100': 'https://www.kunda.no',
   '101': 'https://www.kunda.no/klinikker',
   '102': 'https://www.kunda.no/klinikker',
   '103': 'https://www.kunda.no/klinikker',
